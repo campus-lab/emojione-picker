@@ -1,40 +1,51 @@
 export default function createEmojisFromStrategy(strategy) {
-  const emojis = {};
+	const agressiveEmojis = [
+		':middle_finger_tone1:',
+		':middle_finger_tone2:',
+		':middle_finger_tone3:',
+		':middle_finger_tone4:',
+		':middle_finger_tone5:',
+		':middle_finger:'
+	];
 
-  // categorise and nest emoji
-  // sort ensures that modifiers appear unmodified keys
-  const keys = Object.keys(strategy);
-  for (const key of keys) {
-    const value = strategy[key];
+	const emojis = {};
 
-    // skip unknown categories
-    if (value.category !== "modifier") {
-      if (!emojis[value.category]) emojis[value.category] = {};
-      const match = key.match(/(.*?)_tone(.*?)$/);
+	// categorise and nest emoji
+	// sort ensures that modifiers appear unmodified keys
+	const keys = Object.keys(strategy);
+	for (const key of keys) {
+		const value = strategy[key];
 
-      if (match) {
-        // ensure the shortname is included as a keyword
-        if (!value.keywords.includes(match[1])) {
-          value.keywords.push(match[1]);
-        }
+		// skip unknown categories
+		if (value.category !== "modifier") {
+			if (!emojis[value.category]) emojis[value.category] = {};
+			const match = key.match(/(.*?)_tone(.*?)$/);
 
-        // this check is to stop the plugin from failing in the case that the
-        // emoji strategy miscategorizes tones - which was the case here:
-        // https://github.com/Ranks/emojione/pull/330
-        const unmodifiedEmojiExists = !!emojis[value.category][match[1]];
-        if (unmodifiedEmojiExists) {
-          emojis[value.category][match[1]][match[2]] = value;
-        }
-      } else {
-        // ensure the shortname is included as a keyword
-        if (!value.keywords.includes(key)) {
-          value.keywords.push(key);
-        }
+			if (match) {
+				// ensure the shortname is included as a keyword
+				if (!value.keywords.includes(match[1])) {
+					value.keywords.push(match[1]);
+				}
 
-        emojis[value.category][key] = [value];
-      }
-    }
-  }
+				// this check is to stop the plugin from failing in the case that the
+				// emoji strategy miscategorizes tones - which was the case here:
+				// https://github.com/Ranks/emojione/pull/330
+				const unmodifiedEmojiExists = !!emojis[value.category][match[1]];
+				if (unmodifiedEmojiExists) {
+					emojis[value.category][match[1]][match[2]] = value;
+				}
+			} else {
+				// ensure the shortname is included as a keyword
+				if (!value.keywords.includes(key)) {
+					value.keywords.push(key);
+				}
 
-  return emojis;
+				if (!agressiveEmojis.find(e => e === value.shortname)) {
+					emojis[value.category][key] = [value];
+				}
+			}
+		}
+	}
+
+	return emojis;
 }
